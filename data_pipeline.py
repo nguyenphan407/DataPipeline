@@ -4,8 +4,10 @@ from pyspark.sql.types import IntegerType
 import ingest
 import transform
 import persist
+import logging
 
 class PipeLine:
+    logging.basicConfig(level=logging.INFO)
     def create_spark_session(self):
         postgres_driver_path = "/Users/phanhoangnguyen/LearnNew/big_data/postgresql-42.6.0.jar"
         self.spark = (SparkSession.builder
@@ -13,12 +15,14 @@ class PipeLine:
                       .master("local[*]")
                       .config("spark.jars", postgres_driver_path)
                       .config("spark.driver.host", "127.0.0.1")
+                      .config("spark.hadoop.dfs.defaultFS", "hdfs://localhost:9000")
+                      .config("spark.hadoop.conf.dir", "/Users/phanhoangnguyen/haddop/etc/hadoop")
                       .config("spark.hadoop.dfs.unmaskmode", "000")
                       .getOrCreate())
 
     def run_pipeline(self):
         # Use a breakpoint in the code line below to debug your script.
-        print('Running Pipeline')
+        logging.info('Running Pipeline')
 
         ingest_process = ingest.Ingestion(spark=self.spark)
         df = ingest_process.ingest_data()
@@ -31,10 +35,7 @@ class PipeLine:
         persist_process = persist.Persist(spark=self.spark)
         persist_process.persist_data(transform_df)
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     pipeline = PipeLine()
     pipeline.create_spark_session()
     pipeline.run_pipeline()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -1,3 +1,5 @@
+import logging
+
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType
@@ -7,6 +9,6 @@ class Persist:
         self.spark = spark
 
     def persist_data(self, df):
-        print("Persisting")
+        logging.info("Persisting")
         output_path = "hdfs://localhost:9000/datalake/orders"
         df.write.partitionBy("year", "month", "day").mode("append").parquet(output_path)
